@@ -73,8 +73,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',        # ✅ For CORS support
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ Serve static files
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
