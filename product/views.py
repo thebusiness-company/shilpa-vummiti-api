@@ -103,7 +103,6 @@ def product_in_cart(request):
     
 
 class WishlistView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         wishlist = Wishlist.objects.filter(user=request.user).order_by('-added_at')
