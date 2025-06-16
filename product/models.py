@@ -61,12 +61,9 @@ class CartItem(models.Model):
         return f'{self.quantity}*{self.product.name} in {self.cart.id}'
     
 class Wishlist(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    cart_code = models.CharField(max_length=255)  # used instead of user
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('user', 'product')
-
     def __str__(self):
-        return f"{self.user.username} - {self.product.name}"
+        return f"{self.cart_code} - {self.product.name}"

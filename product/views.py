@@ -101,35 +101,41 @@ def product_in_cart(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
-
 class WishlistView(APIView):
-
     def get(self, request):
-        wishlist = Wishlist.objects.filter(user=request.user).order_by('-added_at')
+        cart_code = request.query_params.get('cart_code')
+        if not cart_code:
+            return Response({'error': 'cart_code is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        wishlist = Wishlist.objects.filter(cart_code=cart_code).order_by('-added_at')
         serializer = WishlistSerializer(wishlist, many=True)
         return Response(serializer.data)
 
     def post(self, request):
+        cart_code = request.data.get('cart_code')
         product_id = request.data.get('product_id')
-        if not product_id:
-            return Response({'error': 'Product ID required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if Wishlist.objects.filter(user=request.user, product_id=product_id).exists():
+        if not cart_code or not product_id:
+            return Response({'error': 'cart_code and product_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if Wishlist.objects.filter(cart_code=cart_code, product_id=product_id).exists():
             return Response({'message': 'Already in wishlist'}, status=status.HTTP_200_OK)
 
         try:
-            Wishlist.objects.create(user=request.user, product_id=product_id)
+            Wishlist.objects.create(cart_code=cart_code, product_id=product_id)
             return Response({'message': 'Added to wishlist'}, status=status.HTTP_201_CREATED)
         except Product.DoesNotExist:
             return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request):
+        cart_code = request.data.get('cart_code')
         product_id = request.data.get('product_id')
-        if not product_id:
-            return Response({'error': 'Product ID required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not cart_code or not product_id:
+            return Response({'error': 'cart_code and product_id are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            item = Wishlist.objects.get(user=request.user, product_id=product_id)
+            item = Wishlist.objects.get(cart_code=cart_code, product_id=product_id)
             item.delete()
             return Response({'message': 'Removed from wishlist'}, status=status.HTTP_204_NO_CONTENT)
         except Wishlist.DoesNotExist:
