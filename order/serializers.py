@@ -15,13 +15,15 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'cart',
+            'order_id',
             'razorpay_order_id',
             'razorpay_payment_id',
             'payment_status',
             'total_amount',
             'created_at',
             'status',
-            'address'
+            'address',
+            'delivered_at', 
         ]
 
 

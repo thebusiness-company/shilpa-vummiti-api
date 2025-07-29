@@ -1,6 +1,9 @@
+import random
 from django.db import models
 from django.conf import settings
 from datetime import datetime
+from django.utils import timezone
+
 class Order(models.Model):
     order_id = models.CharField(max_length=50, unique=True, editable=False)
     cart = models.ForeignKey('product.Cart', on_delete=models.PROTECT, related_name='orders')
@@ -21,16 +24,24 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    def generate_unique_order_id(self):
+        while True:
+            random_code = f"ORD-{random.randint(100000, 999999)}"
+            if not Order.objects.filter(order_id=random_code).exists():
+                return random_code
 
     def save(self, *args, **kwargs):
         if not self.order_id:
-            today = datetime.today().strftime('%Y%m%d')
-            # Use self._meta.model instead of hardcoded Order for better inheritance/flexibility
-            count_today = self._meta.model.objects.filter(
-                created_at__date=datetime.today().date()
-            ).count() + 1
-            self.order_id = f"ORD-{today}-{count_today:04d}"
+            self.order_id = self.generate_unique_order_id()
+
+        if self.pk:
+            previous = Order.objects.get(pk=self.pk)
+            if previous.status != 'delivered' and self.status == 'delivered':
+                self.delivered_at = timezone.now()
+
         super().save(*args, **kwargs)
+
         
 class OrderAddress(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)

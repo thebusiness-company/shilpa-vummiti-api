@@ -218,6 +218,7 @@ class UserOrdersView(APIView):
             orders = Order.objects.filter(user=request.user).order_by('-created_at')
             serializer = OrderSerializer(orders, many=True)
             return Response(serializer.data)
+        
         except Exception as e:
             logger.error(f"Error fetching user orders: {str(e)}")
             return Response({'error': 'An error occurred while fetching your orders'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
