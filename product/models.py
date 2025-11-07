@@ -10,28 +10,31 @@ class Category(models.Model):
         return self.name
 
 class Product(models.Model):
-    sizeoption =(
-        ('Small', 'Small'),
-        ('Medium', 'Medium'),
-        ('Large', 'Large'),
-        ('Extra Large', 'Extra_Large'),
-    )
-    slug = models.SlugField(max_length=255, blank=True,null=True)    
+    slug = models.SlugField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=255)
     price = models.CharField(max_length=50)
     image = models.ImageField(upload_to='product_images/', null=True, blank=True)
     description = models.TextField(blank=True, null=True)
     product_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
-    size = models.CharField(max_length=50, choices=sizeoption, default='Small')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
+
+
+class ProductSize(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sizes')
+    size = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.size}"
+    
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     images = models.ImageField(upload_to='product_images/')
